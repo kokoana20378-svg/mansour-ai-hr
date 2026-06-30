@@ -2,7 +2,7 @@
   "name": "MANSOUR AI — HR Management Dashboard",
   "short_name": "MANSOUR AI",
   "description": "HR Management Dashboard by MANSOUR AI. Manage employees, attendance, payroll, recruitment and more.",
-  "start_url": "/app.html",
+  "start_url": "/mansour-ai-hr/",
   "display": "standalone",
   "background_color": "#E8F5F0",
   "theme_color": "#0F5132",

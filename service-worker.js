@@ -1,7 +1,7 @@
-const CACHE_NAME = 'teamhub-v4';
+const CACHE_NAME = 'teamhub-v6';
 const ASSETS = [
   './',
-  './app.html',
+  './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -37,7 +37,7 @@ self.addEventListener('fetch', (event) => {
       });
     }).catch(() => {
       if (event.request.destination === 'document') {
-        return caches.match('./app.html');
+        return caches.match('./index.html');
       }
     })
   );
