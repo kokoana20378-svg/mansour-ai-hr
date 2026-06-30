@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F5132">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MANSOUR AI">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>MANSOUR AI — HR Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{forest:{DEFAULT:'#0F5132',light:'#134e32',dark:'#0a3720'},mint:'#E8F5F0'}}}}</script>
+<style>
+*{font-family:'Inter',system-ui,sans-serif;box-sizing:border-box}
+html{scroll-behavior:smooth}
+.sl{background:rgba(255,255,255,0.15)}.sl:hover{background:rgba(255,255,255,0.1)}
+@keyframes su{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:su .25s ease-out}
+.toast{position:fixed;top:20px;right:20px;z-index:9999;padding:14px 22px;border-radius:14px;color:#fff;font-weight:500;font-size:14px;animation:su .25s ease-out;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.mb{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #0F5132}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}
+table tr:not(:first-child):hover{background:#f9fafb}
+.ei{width:80px;height:80px;border-radius:20px;display:grid;place-items:center;margin:0 auto}
+.cal-day{min-height:80px;border:1px solid #f3f4f6;padding:4px;cursor:pointer;transition:background .15s}
+.cal-day:hover{background:#f9fafb}
+.cal-day.today{background:#E8F5F0;border-color:#0F5132}
+.cal-day.other{opacity:.3}
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="tb" class="toast hidden"></div>
+<div id="mb" class="mb hidden" onclick="if(event.target===this)cm()"><div id="mi" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()"></div></div>
+<div id="app" class="flex min-h-screen">
+<aside id="sb" class="w-64 bg-forest text-white flex-shrink-0 flex flex-col fixed h-full z-30 transition-transform -translate-x-full lg:translate-x-0">
+  <div class="p-5 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-white/15 rounded-xl grid place-items-center shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M7 8c1.3-3 6.7-3 8 0M12 12a3 3 0 100 6 3 3 0 000-6zM4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div><p class="font-bold text-sm">MANSOUR AI</p><p class="text-[11px] text-white/50">HR Dashboard</p></div>
+    </div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1 overflow-y-auto" id="nl"></nav>
+  <div class="p-3 border-t border-white/10">
+    <a href="https://wa.me/201000931228" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-xl text-xs text-white/80 hover:bg-white/15 transition mb-2">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      WhatsApp: 01000931228
+    </a>
+    <div class="flex items-center gap-3 px-3 py-2">
+      <div class="w-9 h-9 rounded-full bg-white/20 grid place-items-center text-xs font-bold">M</div>
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">Admin</p><p class="text-[11px] text-white/50">HR Manager</p></div>
+    </div>
+  </div>
+</aside>
+<div id="so" class="fixed inset-0 bg-black/50 z-20 hidden lg:hidden" onclick="ts()"></div>
+<main class="flex-1 lg:ml-64 min-h-screen flex flex-col">
+  <header class="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-10 shrink-0">
+    <div class="flex items-center gap-3">
+      <button onclick="ts()" class="lg:hidden p-2 hover:bg-gray-100 rounded-xl"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <h2 id="pt" class="text-lg font-semibold text-gray-800">Dashboard</h2>
+    </div>
+    <span id="td" class="text-sm text-gray-400 hidden sm:block"></span>
+  </header>
+  <div id="ct" class="p-4 sm:p-6 flex-1"></div>
+</main>
+</div>
+<script>
+// === DB ===
+const DK='th_data',DV='th_v',CV='5.0';
+if(localStorage.getItem(DV)!==CV){localStorage.removeItem(DK);localStorage.setItem(DV,CV);}
+function gD(){let d=localStorage.getItem(DK);if(d)return JSON.parse(d);d={employees:[],attendance:[],leaves:[],payroll:[],departments:[],inbox:[],calendar:[],performance:[],recruitment:[]};localStorage.setItem(DK,JSON.stringify(d));return d;}
+function sv(d){localStorage.setItem(DK,JSON.stringify(d));}
+function uid(a){return a.length?Math.max(...a.map(x=>x.id))+1:1}
+const $=id=>document.getElementById(id);
+const ini=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const mn=n=>'E£ '+Number(n).toLocaleString('en');
+const fd=d=>{try{return new Date(d+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'})}catch{return d}};
+function eN(id){const e=gD().employees.find(x=>x.id===id);return e?e.name:'Unknown';}
+function eO(id){return gD().employees.find(x=>x.id===id);}
+function bd(s){const c={present:'bg-green-100 text-green-700',absent:'bg-red-100 text-red-700',late:'bg-amber-100 text-amber-700',approved:'bg-green-100 text-green-700',pending:'bg-amber-100 text-amber-700',rejected:'bg-red-100 text-red-700',paid:'bg-green-100 text-green-700',active:'bg-green-100 text-green-700',on_leave:'bg-blue-100 text-blue-700',inactive:'bg-gray-100 text-gray-500',open:'bg-green-100 text-green-700',closed:'bg-gray-100 text-gray-500',hired:'bg-blue-100 text-blue-700',interviewing:'bg-purple-100 text-purple-700',shortlisted:'bg-amber-100 text-amber-700',reviewing:'bg-cyan-100 text-cyan-700',unread:'bg-blue-100 text-blue-700'};return`<span class="px-2.5 py-1 rounded-full text-xs font-medium ${c[s]||'bg-gray-100 text-gray-600'}">${s.replace(/_/g,' ')}</span>`;}
+function t(m,t='success'){const e=$('tb');e.textContent=m;e.className='toast';e.style.background=t==='success'?'#0F5132':t==='error'?'#dc2626':'#d97706';e.classList.remove('hidden');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.add('hidden'),2500);}
+function md(h){$('mi').innerHTML=h;$('mb').classList.remove('hidden');}
+function cm(){$('mb').classList.add('hidden');}
+function ts(){$('sb').classList.toggle('-translate-x-full');$('so').classList.toggle('hidden');}
+function es(icon,title,sub,btn){return`<div class="flex flex-col items-center justify-center py-16 text-center"><div class="ei bg-gray-100">${icon}</div><h3 class="text-lg font-semibold text-gray-700 mt-4">${title}</h3><p class="text-sm text-gray-400 mt-1 max-w-xs">${sub}</p>${btn?`<div class="mt-5">${btn}</div>`:''}</div>`;}
+function cm2(title,msg,fn){md(`<div class="p-6 text-center"><div class="w-14 h-14 rounded-full bg-red-100 grid place-items-center mx-auto mb-4"><svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><h3 class="text-lg font-semibold">${title}</h3><p class="text-sm text-gray-500 mt-2">${msg}</p><div class="flex gap-3 mt-6"><button onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Cancel</button><button id="cbt" class="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition">Confirm</button></div></div>`);$('cbt').onclick=function(){cm();fn();};}
+function dOpts(sel){return gD().departments.map(d=>`<option ${d===sel?'selected':''}>${d}</option>`).join('');}
+
+// === NAV ===
+const P=[
+  {id:'dashboard',l:'Dashboard',i:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'},
+  {id:'inbox',l:'Inbox',i:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/>'},
+  {id:'calendar',l:'Calendar',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'},
+  {id:'employees',l:'Employees',i:'<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.85"/>'},
+  {id:'attendance',l:'Attendance',i:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
+  {id:'performance',l:'Performance',i:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'},
+  {id:'leaves',l:'Leave Mgmt',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'},
+  {id:'payroll',l:'Payroll',i:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'},
+  {id:'recruitment',l:'Recruitment',i:'<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/>'},
+  {id:'departments',l:'Departments',i:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/>'}
+];
+let CP='dashboard';
+function bN(){$('nl').innerHTML=P.map(p=>`<a href="#" onclick="go('${p.id}');return false" class="sl flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${p.id===CP?'active':''}" data-page="${p.id}"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">${p.i}</svg>${p.l}</a>`).join('');}
+function go(pg){CP=pg;$('pt').textContent=P.find(p=>p.id===pg)?.l||'';bN();const R={dashboard:rDash,inbox:rInbox,calendar:rCal,employees:rEmp,attendance:rAtt,performance:rPerf,leaves:rLeave,payroll:rPay,recruitment:rRecr,departments:rDept};if(R[pg])R[pg]();$('sb').classList.add('-translate-x-full');$('so').classList.add('hidden');window.scrollTo(0,0);}
+
+// === DASHBOARD ===
+function rDash(){
+  const db=gD(),today=new Date().toISOString().slice(0,10),ta=db.attendance.filter(a=>a.date===today);
+  if(!db.employees.length){$('ct').innerHTML=`<div class="anim">${es('<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/></svg>','No Data Yet','Start by adding employees, departments, and tracking attendance.','<button onclick="go(\'employees\')" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition">Add First Employee →</button>')}</div>`;return;}
+  const ae=db.employees.filter(e=>e.status==='active').length,pc=ta.filter(a=>a.status==='present'||a.status==='late').length,ol=db.employees.filter(e=>e.status==='on_leave').length,pl=db.leaves.filter(l=>l.status==='pending').length;
+  const S=[{l:'Total Employees',v:ae,c:'text-blue-600',bg:'bg-blue-50',i:'<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/>'},{l:'Present Today',v:pc,c:'text-green-600',bg:'bg-green-50',i:'<path d="M20 6L9 17l-5-5"/>'},{l:'On Leave',v:ol,c:'text-amber-600',bg:'bg-amber-50',i:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'},{l:'Pending Leaves',v:pl,c:'text-rose-600',bg:'bg-rose-50',i:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>'}];
+  const dt={};db.employees.forEach(e=>{dt[e.department]=(dt[e.department]||0)+1});const mx=Math.max(...Object.values(dt),1);const dc=['bg-forest','bg-blue-500','bg-amber-500','bg-rose-500','bg-purple-500','bg-cyan-500'];
+  const rl=db.leaves.slice().reverse().slice(0,5);
+  $('ct').innerHTML=`<div class="anim space-y-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">${S.map(s=>`<div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"><div class="flex items-center justify-between"><div><p class="text-sm text-gray-500">${s.l}</p><p class="text-2xl font-bold ${s.c} mt-1">${s.v}</p></div><div class="w-11 h-11 ${s.bg} rounded-xl grid place-items-center ${s.c}"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">${s.i}</svg></div></div></div>`).join('')}</div>
+    <div class="grid lg:grid-cols-3 gap-4">
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5"><h3 class="font-semibold text-gray-800 mb-4">Department Distribution</h3><div class="space-y-3">${Object.entries(dt).map(([d,c],i)=>`<div class="flex items-center gap-3"><span class="text-sm text-gray-600 w-28 shrink-0">${d}</span><div class="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden"><div class="${dc[i%dc.length]} h-full rounded-full flex items-center justify-end pr-2 transition-all duration-500" style="width:${Math.max((c/mx)*100,8)}%"><span class="text-[11px] font-bold text-white">${c}</span></div></div></div>`).join('')}</div></div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"><h3 class="font-semibold text-gray-800 mb-4">Recent Leave Requests</h3><div class="space-y-4">${rl.length?rl.map(l=>`<div class="flex items-start gap-3"><div class="w-8 h-8 rounded-full bg-mint grid place-items-center text-forest text-[11px] font-bold shrink-0">${ini(eN(l.employeeId))}</div><div class="min-w-0"><p class="text-sm"><span class="font-medium">${eN(l.employeeId)}</span> <span class="text-gray-400">requested</span> <span class="font-medium">${l.type}</span></p><div class="flex items-center gap-2 mt-1">${bd(l.status)}<span class="text-[11px] text-gray-400">${fd(l.startDate)}</span></div></div></div>`).join(''):es('<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d1d5db" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>','No Requests','Leave requests will appear here.')}</div></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm"><div class="p-5 border-b border-gray-100 flex items-center justify-between"><h3 class="font-semibold text-gray-800">Today's Attendance</h3><button onclick="go('attendance')" class="text-sm text-forest font-medium hover:underline">View All →</button></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr><th class="px-5 py-3 font-medium text-gray-500">Employee</th><th class="px-5 py-3 font-medium text-gray-500">Check In</th><th class="px-5 py-3 font-medium text-gray-500">Check Out</th><th class="px-5 py-3 font-medium text-gray-500">Status</th></tr></thead><tbody>${ta.length?ta.map(a=>{const e=eO(a.employeeId);if(!e)return'';return`<tr class="border-t border-gray-50"><td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold">${ini(e.name)}</div><span class="font-medium">${e.name}</span></div></td><td class="px-5 py-3 text-gray-600">${a.checkIn||'-'}</td><td class="px-5 py-3 text-gray-600">${a.checkOut||'-'}</td><td class="px-5 py-3">${bd(a.status)}</td></tr>`}).join(''):`<tr><td colspan="4" class="px-5 py-10 text-center text-gray-400">No attendance records for today</td></tr>`}</tbody></table></div></div>
+  </div>`;
+}
+
+// === INBOX ===
+function rInbox(){
+  const db=gD();
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <p class="text-sm text-gray-500">${db.inbox.length} message${db.inbox.length!==1?'s':''}</p>
+      <button onclick="mNewMsg()" class="bg-forest text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> New Message</button>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+        <th class="px-5 py-3 font-medium text-gray-500 w-10"></th>
+        <th class="px-5 py-3 font-medium text-gray-500">From</th>
+        <th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">Subject</th>
+        <th class="px-5 py-3 font-medium text-gray-500 hidden md:table-cell">Date</th>
+        <th class="px-5 py-3 font-medium text-gray-500">Status</th>
+      </tr></thead><tbody id="inTb"></tbody></table></div>
+    </div>
+  </div>`;
+  rInTb();
+}
+function rInTb(){
+  const db=gD();
+  if(!db.inbox.length){$('inTb').innerHTML=`<tr><td colspan="5">${es('<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d1d5db" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>','No Messages','Your inbox is empty.','<button onclick="mNewMsg()" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">+ New Message</button>')}</td></tr>`;return;}
+  $('inTb').innerHTML=db.inbox.slice().reverse().map(m=>`<tr class="border-t border-gray-50 cursor-pointer hover:bg-gray-50 ${!m.read?'bg-blue-50/30':''}" onclick="viewMsg(${m.id})">
+    <td class="px-5 py-3"><div class="w-2 h-2 rounded-full ${m.read?'bg-transparent':'bg-blue-500'}"></div></td>
+    <td class="px-5 py-3"><span class="font-medium ${!m.read?'text-gray-900':'text-gray-600'}">${m.from}</span></td>
+    <td class="px-5 py-3 text-gray-600 hidden sm:table-cell truncate max-w-[200px]">${m.subject}</td>
+    <td class="px-5 py-3 text-gray-400 hidden md:table-cell text-xs">${fd(m.date)}</td>
+    <td class="px-5 py-3">${bd(m.type)}</td>
+  </tr>`).join('');
+}
+function viewMsg(id){
+  const db=gD();const m=db.inbox.find(x=>x.id===id);if(!m)return;
+  m.read=true;sv(db);
+  md(`<div class="p-6"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">${m.subject}</h3><button onclick="cm()" class="p-2 hover:bg-gray-100 rounded-xl"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+      <div class="w-10 h-10 rounded-full bg-mint grid place-items-center text-forest text-sm font-bold">${ini(m.from)}</div>
+      <div><p class="font-medium">${m.from}</p><p class="text-xs text-gray-400">${fd(m.date)}</p></div>
+      <div class="ml-auto">${bd(m.type)}</div>
+    </div>
+    <div class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">${m.body}</div>
+    <div class="flex gap-3 mt-6"><button onclick="delMsg(${id})" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 transition">Delete</button><button onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Close</button></div>
+  </div>`);
+  rInTb();
+}
+function mNewMsg(){
+  md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">New Message</h3>
+    <form id="msgForm" class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">From</label><input id="f_from" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Subject</label><input id="f_subj" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Type</label><select id="f_type" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"><option>announcement</option><option>leave_request</option><option>interview</option><option>general</option></select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Message</label><textarea id="f_body" rows="5" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></textarea></div>
+      <div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium hover:bg-forest-light transition">Send</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Cancel</button></div>
+    </form></div>`);
+  $('msgForm').onsubmit=function(ev){ev.preventDefault();const db=gD();db.inbox.push({id:uid(db.inbox),from:$('f_from').value.trim(),subject:$('f_subj').value.trim(),body:$('f_body').value.trim(),type:$('f_type').value,date:new Date().toISOString().slice(0,10),read:false});sv(db);cm();rInTb();t('Message sent!');};
+}
+function delMsg(id){cm2('Delete Message?','This message will be permanently deleted.',()=>{const db=gD();db.inbox=db.inbox.filter(m=>m.id!==id);sv(db);rInTb();t('Message deleted');});}
+
+// === CALENDAR ===
+let calYear,calMonth;
+function rCal(){
+  const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
+  rCalView();
+}
+function rCalView(){
+  const db=gD();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const first=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const today=new Date();const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const thisMonth=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+  const events=db.calendar.filter(e=>e.date.startsWith(thisMonth));
+  let cells='';
+  for(let i=0;i<first;i++){cells+=`<div class="cal-day other"><span class="text-xs text-gray-400">${daysInPrev-first+i+1}</span></div>`;}
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===todayStr;
+    const dayEvents=events.filter(e=>e.date===ds);
+    cells+=`<div class="cal-day ${isToday?'today':''}" onclick="mAddEvent('${ds}')">
+      <span class="text-xs font-medium ${isToday?'text-forest font-bold':'text-gray-700'}">${d}</span>
+      ${dayEvents.map(e=>`<div class="text-[10px] px-1 py-0.5 rounded bg-forest text-white mt-0.5 truncate">${e.title}</div>`).join('')}
+    </div>`;
+  }
+  const remaining=42-(first+daysInMonth);
+  for(let i=1;i<=remaining;i++){cells+=`<div class="cal-day other"><span class="text-xs text-gray-400">${i}</span></div>`;}
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <p class="text-sm text-gray-500">${events.length} event${events.length!==1?'s':''} this month</p>
+      <button onclick="mAddEvent('${todayStr}')" class="bg-forest text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add Event</button>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-4">
+      <div class="flex items-center justify-between mb-4">
+        <button onclick="calMonth--;if(calMonth<0){calMonth=11;calYear--;}rCalView();" class="p-2 hover:bg-gray-100 rounded-xl"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg></button>
+        <h3 class="text-lg font-semibold">${months[calMonth]} ${calYear}</h3>
+        <button onclick="calMonth++;if(calMonth>11){calMonth=0;calYear++;}rCalView();" class="p-2 hover:bg-gray-100 rounded-xl"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="grid grid-cols-7 gap-px bg-gray-100 rounded-xl overflow-hidden">
+        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="bg-gray-50 text-center py-2 text-xs font-medium text-gray-500">${d}</div>`).join('')}
+        ${cells}
+      </div>
+    </div>
+  </div>`;
+}
+function mAddEvent(date){
+  md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Add Event</h3>
+    <form id="evtForm" class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Date</label><input id="f_date" type="date" value="${date}" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Event Title</label><input id="f_title" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Type</label><select id="f_etype" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"><option>meeting</option><option>deadline</option><option>holiday</option><option>interview</option><option>other</option></select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="f_edesc" rows="2" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></textarea></div>
+      <div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium hover:bg-forest-light transition">Add</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Cancel</button></div>
+    </form></div>`);
+  $('evtForm').onsubmit=function(ev){ev.preventDefault();const db=gD();db.calendar.push({id:uid(db.calendar),date:$('f_date').value,title:$('f_title').value.trim(),type:$('f_etype').value,description:$('f_edesc').value.trim()});sv(db);cm();rCalView();t('Event added!');};
+}
+
+// === EMPLOYEES ===
+let empView='table';
+function rEmp(){
+  const db=gD();
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <p class="text-sm text-gray-500">${db.employees.length} employee${db.employees.length!==1?'s':''}</p>
+      <div class="flex gap-2">
+        <div class="flex bg-gray-100 rounded-xl p-1">
+          <button onclick="empView='table';rEmp();" class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${empView==='table'?'bg-white shadow-sm text-gray-800':'text-gray-500'}"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+          <button onclick="empView='grid';rEmp();" class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${empView==='grid'?'bg-white shadow-sm text-gray-800':'text-gray-500'}"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></button>
+        </div>
+        <button onclick="expEmp()" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+        <button onclick="mAddEmp()" class="bg-forest text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add</button>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+        <input id="eq" type="text" placeholder="Search..." class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm" oninput="rEmpT()">
+        <select id="ed" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" onchange="rEmpT()"><option value="">All Departments</option>${db.departments.map(d=>`<option>${d}</option>`).join('')}</select>
+        <select id="es2" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" onchange="rEmpT()"><option value="">All Status</option><option value="active">Active</option><option value="on_leave">On Leave</option><option value="inactive">Inactive</option></select>
+      </div>
+      <div id="empContainer"></div>
+    </div>
+  </div>`;
+  rEmpT();
+}
+function rEmpT(){
+  const db=gD();let list=[...db.employees];
+  const q=($('eq')?.value||'').toLowerCase(),dept=$('ed')?.value||'',st=$('es2')?.value||'';
+  if(q)list=list.filter(e=>e.name.toLowerCase().includes(q)||e.email.toLowerCase().includes(q));
+  if(dept)list=list.filter(e=>e.department===dept);
+  if(st)list=list.filter(e=>e.status===st);
+
+  if(!db.employees.length){$('empContainer').innerHTML=es('<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/></svg>','No Employees','Add your first employee.','<button onclick="mAddEmp()" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">+ Add Employee</button>');return;}
+  if(!list.length){$('empContainer').innerHTML=`<div class="px-5 py-10 text-center text-gray-400 text-sm">No employees match your filters</div>`;return;}
+
+  if(empView==='grid'){
+    $('empContainer').innerHTML=`<div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${list.map(e=>`
+      <div onclick="mViewEmp(${e.id})" class="bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition cursor-pointer">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-12 h-12 rounded-xl bg-mint grid place-items-center text-forest text-sm font-bold">${ini(e.name)}</div>
+          <div class="min-w-0"><p class="font-semibold truncate">${e.name}</p><p class="text-xs text-gray-400 truncate">${e.position}</p></div>
+        </div>
+        <div class="flex items-center justify-between">
+          ${bd(e.status)}
+          <span class="text-sm font-medium text-gray-600">${mn(e.salary)}</span>
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+          <span>${e.department}</span>
+          <span>${e.email}</span>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  } else {
+    $('empContainer').innerHTML=`<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+      <th class="px-5 py-3 font-medium text-gray-500">Employee</th>
+      <th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">Dept</th>
+      <th class="px-5 py-3 font-medium text-gray-500 hidden md:table-cell">Position</th>
+      <th class="px-5 py-3 font-medium text-gray-500 hidden lg:table-cell">Salary</th>
+      <th class="px-5 py-3 font-medium text-gray-500">Status</th>
+      <th class="px-5 py-3 font-medium text-gray-500 text-right">Actions</th>
+    </tr></thead><tbody>${list.map(e=>`<tr class="border-t border-gray-50 cursor-pointer" onclick="mViewEmp(${e.id})">
+      <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold shrink-0">${ini(e.name)}</div><div class="min-w-0"><p class="font-medium truncate">${e.name}</p><p class="text-xs text-gray-400 truncate">${e.email}</p></div></div></td>
+      <td class="px-5 py-3 text-gray-600 hidden sm:table-cell">${e.department}</td>
+      <td class="px-5 py-3 text-gray-600 hidden md:table-cell">${e.position}</td>
+      <td class="px-5 py-3 text-gray-600 hidden lg:table-cell font-medium">${mn(e.salary)}</td>
+      <td class="px-5 py-3">${bd(e.status)}</td>
+      <td class="px-5 py-3 text-right" onclick="event.stopPropagation()"><button onclick="mEditEmp(${e.id})" class="p-1.5 hover:bg-gray-100 rounded-lg inline-flex" title="Edit"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button onclick="delEmp(${e.id})" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500 inline-flex" title="Delete"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+  }
+}
+
+function mViewEmp(id){
+  const e=eO(id);if(!e)return;const db=gD();
+  const el=db.leaves.filter(l=>l.employeeId===id),ea=db.attendance.filter(a=>a.employeeId===id),ep=db.payroll.filter(p=>p.employeeId===id),eperf=db.performance.filter(p=>p.employeeId===id);
+  md(`<div class="p-6">
+    <div class="flex items-center justify-between mb-5"><h3 class="text-lg font-semibold">Employee Profile</h3><button onclick="cm()" class="p-2 hover:bg-gray-100 rounded-xl"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="flex items-center gap-4 mb-5 pb-5 border-b border-gray-100">
+      <div class="w-16 h-16 rounded-2xl bg-mint grid place-items-center text-forest text-xl font-bold">${ini(e.name)}</div>
+      <div><p class="text-xl font-semibold">${e.name}</p><p class="text-sm text-gray-500">${e.position} • ${e.department}</p>${bd(e.status)}</div>
+    </div>
+    <div class="grid grid-cols-2 gap-3 text-sm mb-5">
+      <div class="bg-gray-50 rounded-xl p-3"><p class="text-gray-400 text-xs">Email</p><p class="font-medium mt-0.5">${e.email}</p></div>
+      <div class="bg-gray-50 rounded-xl p-3"><p class="text-gray-400 text-xs">Phone</p><p class="font-medium mt-0.5">${e.phone}</p></div>
+      <div class="bg-gray-50 rounded-xl p-3"><p class="text-gray-400 text-xs">Salary</p><p class="font-medium mt-0.5">${mn(e.salary)}</p></div>
+      <div class="bg-gray-50 rounded-xl p-3"><p class="text-gray-400 text-xs">Join Date</p><p class="font-medium mt-0.5">${fd(e.joinDate)}</p></div>
+    </div>
+    <div class="grid grid-cols-4 gap-2 mb-4">
+      <div class="bg-blue-50 rounded-xl p-3 text-center"><p class="text-lg font-bold text-blue-600">${ea.length}</p><p class="text-[11px] text-gray-500">Attendance</p></div>
+      <div class="bg-amber-50 rounded-xl p-3 text-center"><p class="text-lg font-bold text-amber-600">${el.length}</p><p class="text-[11px] text-gray-500">Leaves</p></div>
+      <div class="bg-green-50 rounded-xl p-3 text-center"><p class="text-lg font-bold text-green-600">${ep.length}</p><p class="text-[11px] text-gray-500">Payroll</p></div>
+      <div class="bg-purple-50 rounded-xl p-3 text-center"><p class="text-lg font-bold text-purple-600">${eperf.length}</p><p class="text-[11px] text-gray-500">Reviews</p></div>
+    </div>
+    <div class="flex gap-3"><button onclick="cm();mEditEmp(${id})" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium hover:bg-forest-light transition">Edit</button><button onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Close</button></div>
+  </div>`);
+}
+
+function mAddEmp(){
+  md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Add New Employee</h3>
+    <form id="aeForm" class="space-y-4"><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label><input id="fn" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input id="fe" type="email" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label><input id="fp" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Department *</label><select id="fd2" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">${dOpts()}</select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Position *</label><input id="fpo" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Salary *</label><input id="fs" type="number" min="0" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Join Date *</label><input id="fj" type="date" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+    </div><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium hover:bg-forest-light transition">Add</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Cancel</button></div></form></div>`);
+  $('aeForm').onsubmit=function(ev){ev.preventDefault();const db=gD();db.employees.push({id:uid(db.employees),name:$('fn').value.trim(),email:$('fe').value.trim(),phone:$('fp').value.trim(),department:$('fd2').value,position:$('fpo').value.trim(),salary:Number($('fs').value),joinDate:$('fj').value,status:'active'});sv(db);cm();rEmpT();t('Employee added!');};
+}
+function mEditEmp(id){
+  const db=gD();const e=db.employees.find(x=>x.id===id);if(!e)return;
+  md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Edit Employee</h3>
+    <form id="eeForm" class="space-y-4"><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Name</label><input id="fn" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${e.name}" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input id="fe" type="email" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${e.email}" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input id="fp" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${e.phone}" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Department</label><select id="fd2" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">${dOpts(e.department)}</select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Position</label><input id="fpo" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${e.position}" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Salary</label><input id="fs" type="number" min="0" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${e.salary}" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label><select id="fst" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"><option value="active" ${e.status==='active'?'selected':''}>Active</option><option value="on_leave" ${e.status==='on_leave'?'selected':''}>On Leave</option><option value="inactive" ${e.status==='inactive'?'selected':''}>Inactive</option></select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Join Date</label><input id="fj" type="date" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${e.joinDate}"></div>
+    </div><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium hover:bg-forest-light transition">Save</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Cancel</button></div></form></div>`);
+  $('eeForm').onsubmit=function(ev){ev.preventDefault();Object.assign(e,{name:$('fn').value.trim(),email:$('fe').value.trim(),phone:$('fp').value.trim(),department:$('fd2').value,position:$('fpo').value.trim(),salary:Number($('fs').value),status:$('fst').value,joinDate:$('fj').value});sv(db);cm();rEmpT();t('Employee updated!');};
+}
+function delEmp(id){const e=eO(id);if(!e)return;cm2('Delete Employee?',`Delete "${e.name}"? All data will be removed.`,()=>{const db=gD();db.employees=db.employees.filter(x=>x.id!==id);db.attendance=db.attendance.filter(x=>x.employeeId!==id);db.leaves=db.leaves.filter(x=>x.employeeId!==id);db.payroll=db.payroll.filter(x=>x.employeeId!==id);db.performance=db.performance.filter(x=>x.employeeId!==id);sv(db);rEmpT();t('Deleted');});}
+function expEmp(){const db=gD();if(!db.employees.length){t('No data','error');return;}let c='Name,Email,Phone,Department,Position,Salary,Join Date,Status\n';db.employees.forEach(e=>{c+=`"${e.name}","${e.email}","${e.phone}","${e.department}","${e.position}",${e.salary},"${e.joinDate}","${e.status}"\n`;});const b=new Blob([c],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='employees.csv';a.click();t('Exported!');}
+
+// === ATTENDANCE ===
+function rAtt(){
+  const db=gD();const today=new Date().toISOString().slice(0,10);
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <p class="text-sm text-gray-500">Track check-in and check-out</p>
+      <input id="ad" type="date" value="${today}" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" onchange="rAttT()">
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-gray-100 flex flex-wrap gap-2">
+        <button onclick="mCI()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition flex items-center gap-1.5"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Check In</button>
+        <button onclick="mCO()" class="bg-amber-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-600 transition flex items-center gap-1.5"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg> Check Out</button>
+      </div>
+      <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+        <th class="px-5 py-3 font-medium text-gray-500">Employee</th><th class="px-5 py-3 font-medium text-gray-500">Date</th><th class="px-5 py-3 font-medium text-gray-500">In</th><th class="px-5 py-3 font-medium text-gray-500">Out</th><th class="px-5 py-3 font-medium text-gray-500">Status</th>
+      </tr></thead><tbody id="atTb"></tbody></table></div>
+    </div>
+  </div>`;rAttT();
+}
+function rAttT(){
+  const db=gD();const date=$('ad')?.value||new Date().toISOString().slice(0,10);
+  const rec=db.attendance.filter(a=>a.date===date);
+  if(!rec.length){$('atTb').innerHTML=`<tr><td colspan="5" class="px-5 py-10 text-center text-gray-400">No records for this date</td></tr>`;return;}
+  $('atTb').innerHTML=rec.map(a=>{const e=eO(a.employeeId);if(!e)return'';return`<tr class="border-t border-gray-50"><td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold">${ini(e.name)}</div><span class="font-medium">${e.name}</span></div></td><td class="px-5 py-3 text-gray-600">${fd(a.date)}</td><td class="px-5 py-3 font-medium ${a.checkIn?'text-gray-800':'text-gray-300'}">${a.checkIn||'—'}</td><td class="px-5 py-3 font-medium ${a.checkOut?'text-gray-800':'text-gray-300'}">${a.checkOut||'—'}</td><td class="px-5 py-3">${bd(a.status)}</td></tr>`}).join('');
+}
+function mCI(){const db=gD();const ac=db.employees.filter(e=>e.status==='active');if(!ac.length){t('No active employees','error');return;}md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Check In</h3><form id="cif" class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Employee</label><select id="cie" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">${ac.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Time</label><input id="cit" type="time" value="${new Date().toTimeString().slice(0,5)}" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></div><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium">Check In</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium">Cancel</button></div></form></div>`);$('cif').onsubmit=function(ev){ev.preventDefault();const db=gD();const eid=Number($('cie').value),time=$('cit').value,today=new Date().toISOString().slice(0,10);const ex=db.attendance.find(a=>a.employeeId===eid&&a.date===today);const st=time>'09:00'?'late':'present';if(ex){ex.checkIn=time;ex.status=st;}else{db.attendance.push({employeeId:eid,date:today,checkIn:time,checkOut:null,status:st});}sv(db);cm();rAttT();t('Checked in!');};}
+function mCO(){const db=gD();const today=new Date().toISOString().slice(0,10);const ci=db.attendance.filter(a=>a.date===today&&a.checkIn&&!a.checkOut);if(!ci.length){t('No one to check out','error');return;}md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Check Out</h3><form id="cof" class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Employee</label><select id="coe" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">${ci.map(a=>{const e=eO(a.employeeId);return e?`<option value="${e.id}">${e.name}</option>`:'';}).join('')}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Time</label><input id="cot" type="time" value="${new Date().toTimeString().slice(0,5)}" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></div><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-amber-500 text-white py-2.5 rounded-xl font-medium">Check Out</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium">Cancel</button></div></form></div>`);$('cof').onsubmit=function(ev){ev.preventDefault();const db=gD();const eid=Number($('coe').value),time=$('cot').value,today=new Date().toISOString().slice(0,10);const r=db.attendance.find(a=>a.employeeId===eid&&a.date===today);if(r)r.checkOut=time;sv(db);cm();rAttT();t('Checked out!');};}
+
+// === PERFORMANCE ===
+function rPerf(){
+  const db=gD();
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <p class="text-sm text-gray-500">${db.performance.length} review${db.performance.length!==1?'s':''}</p>
+      <button onclick="mAddPerf()" class="bg-forest text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> New Review</button>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+        <th class="px-5 py-3 font-medium text-gray-500">Employee</th>
+        <th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">Period</th>
+        <th class="px-5 py-3 font-medium text-gray-500">Teamwork</th>
+        <th class="px-5 py-3 font-medium text-gray-500">Quality</th>
+        <th class="px-5 py-3 font-medium text-gray-500">Time Mgmt</th>
+        <th class="px-5 py-3 font-medium text-gray-500">Overall</th>
+        <th class="px-5 py-3 font-medium text-gray-500">Actions</th>
+      </tr></thead><tbody id="pfTb"></tbody></table></div>
+    </div>
+  </div>`;rPerfT();
+}
+function rPerfT(){
+  const db=gD();
+  if(!db.performance.length){$('pfTb').innerHTML=`<tr><td colspan="7">${es('<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d1d5db" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>','No Reviews','Add performance reviews for your team.','<button onclick="mAddPerf()" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">+ New Review</button>')}</td></tr>`;return;}
+  $('pfTb').innerHTML=db.performance.slice().reverse().map(p=>{const avg=Math.round((p.teamwork+p.quality+p.timeMgmt)/3);const avgColor=avg>=80?'text-green-600':avg>=60?'text-amber-600':'text-red-600';return`<tr class="border-t border-gray-50">
+    <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold">${ini(eN(p.employeeId))}</div><span class="font-medium">${eN(p.employeeId)}</span></div></td>
+    <td class="px-5 py-3 text-gray-600 hidden sm:table-cell">${p.period}</td>
+    <td class="px-5 py-3"><div class="flex items-center gap-2"><div class="w-16 bg-gray-100 rounded-full h-2"><div class="bg-forest h-full rounded-full" style="width:${p.teamwork}%"></div></div><span class="text-xs text-gray-600">${p.teamwork}%</span></div></td>
+    <td class="px-5 py-3"><div class="flex items-center gap-2"><div class="w-16 bg-gray-100 rounded-full h-2"><div class="bg-blue-500 h-full rounded-full" style="width:${p.quality}%"></div></div><span class="text-xs text-gray-600">${p.quality}%</span></div></td>
+    <td class="px-5 py-3"><div class="flex items-center gap-2"><div class="w-16 bg-gray-100 rounded-full h-2"><div class="bg-amber-500 h-full rounded-full" style="width:${p.timeMgmt}%"></div></div><span class="text-xs text-gray-600">${p.timeMgmt}%</span></div></td>
+    <td class="px-5 py-3"><span class="font-bold ${avgColor}">${avg}%</span></td>
+    <td class="px-5 py-3"><button onclick="delPerf(${p.id})" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500" title="Delete"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+  </tr>`}).join('');
+}
+function mAddPerf(){
+  const db=gD();if(!db.employees.length){t('Add employees first','error');return;}
+  const now=new Date();const period=`${now.toLocaleString('en',{month:'long'})} ${now.getFullYear()}`;
+  md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">New Performance Review</h3>
+    <form id="pfForm" class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Employee</label><select id="fpf_emp" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">${db.employees.filter(e=>e.status==='active').map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Period</label><input id="fpf_period" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" value="${period}"></div>
+      <div class="grid grid-cols-3 gap-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Teamwork (0-100)</label><input id="fpf_tw" type="number" min="0" max="100" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Quality (0-100)</label><input id="fpf_q" type="number" min="0" max="100" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Time Mgmt (0-100)</label><input id="fpf_tm" type="number" min="0" max="100" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Notes</label><textarea id="fpf_notes" rows="3" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></textarea></div>
+      <div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium hover:bg-forest-light transition">Submit</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Cancel</button></div>
+    </form></div>`);
+  $('pfForm').onsubmit=function(ev){ev.preventDefault();const db=gD();db.performance.push({id:uid(db.performance),employeeId:Number($('fpf_emp').value),period:$('fpf_period').value.trim(),teamwork:Number($('fpf_tw').value),quality:Number($('fpf_q').value),timeMgmt:Number($('fpf_tm').value),notes:$('fpf_notes').value.trim()});sv(db);cm();rPerfT();t('Review added!');};
+}
+function delPerf(id){cm2('Delete Review?','This performance review will be deleted.',()=>{const db=gD();db.performance=db.performance.filter(p=>p.id!==id);sv(db);rPerfT();t('Deleted');});}
+
+// === LEAVES ===
+function rLeave(){
+  const db=gD();const pe=db.leaves.filter(l=>l.status==='pending').length,ap=db.leaves.filter(l=>l.status==='approved').length,rj=db.leaves.filter(l=>l.status==='rejected').length;
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"><p class="text-sm text-gray-500">Manage leave requests</p><button onclick="mAddLv()" class="bg-forest text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> New Request</button></div>
+    <div class="grid grid-cols-3 gap-4"><div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center"><p class="text-3xl font-bold text-amber-500">${pe}</p><p class="text-sm text-gray-500 mt-1">Pending</p></div><div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center"><p class="text-3xl font-bold text-green-500">${ap}</p><p class="text-sm text-gray-500 mt-1">Approved</p></div><div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center"><p class="text-3xl font-bold text-red-500">${rj}</p><p class="text-sm text-gray-500 mt-1">Rejected</p></div></div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+      <th class="px-5 py-3 font-medium text-gray-500">Employee</th><th class="px-5 py-3 font-medium text-gray-500">Type</th><th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">From</th><th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">To</th><th class="px-5 py-3 font-medium text-gray-500">Status</th><th class="px-5 py-3 font-medium text-gray-500">Actions</th>
+    </tr></thead><tbody>${db.leaves.length?db.leaves.slice().reverse().map(l=>`<tr class="border-t border-gray-50"><td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold">${ini(eN(l.employeeId))}</div><div><p class="font-medium">${eN(l.employeeId)}</p><p class="text-[11px] text-gray-400 hidden sm:block">${l.reason||'No reason'}</p></div></div></td><td class="px-5 py-3 text-gray-600">${l.type}</td><td class="px-5 py-3 text-gray-600 hidden sm:table-cell">${fd(l.startDate)}</td><td class="px-5 py-3 text-gray-600 hidden sm:table-cell">${fd(l.endDate)}</td><td class="px-5 py-3">${bd(l.status)}</td><td class="px-5 py-3">${l.status==='pending'?`<div class="flex gap-1"><button onclick="actLv(${l.id},'approved')" class="p-1.5 hover:bg-green-50 rounded-lg text-green-600"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></button><button onclick="actLv(${l.id},'rejected')" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>`:'<span class="text-xs text-gray-400">—</span>'}</td></tr>`).join(''):`<tr><td colspan="6">${es('<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d1d5db" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>','No Leave Requests','Submit a new request.','<button onclick="mAddLv()" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">+ New Request</button>')}</td></tr>`}</tbody></table></div></div>
+  </div>`;
+}
+function mAddLv(){const db=gD();const ac=db.employees.filter(e=>e.status==='active'||e.status==='on_leave');if(!ac.length){t('Add employees first','error');return;}md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">New Leave Request</h3><form id="lvForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Employee</label><select id="flv_e" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm">${ac.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Type</label><select id="flv_t" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"><option>Annual</option><option>Sick</option><option>Personal</option><option>Maternity</option><option>Unpaid</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">From</label><input id="flv_f" type="date" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div><div><label class="block text-sm font-medium text-gray-700 mb-1">To</label><input id="flv_to" type="date" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Reason</label><textarea id="flv_r" rows="2" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></textarea></div><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium">Submit</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium">Cancel</button></div></form></div>`);$('lvForm').onsubmit=function(ev){ev.preventDefault();if($('flv_to').value<$('flv_f').value){t('End date after start','error');return;}const db=gD();db.leaves.push({id:uid(db.leaves),employeeId:Number($('flv_e').value),type:$('flv_t').value,startDate:$('flv_f').value,endDate:$('flv_to').value,reason:$('flv_r').value.trim(),status:'pending'});sv(db);cm();rLeave();t('Request submitted!');};}
+function actLv(id,s){const db=gD();const l=db.leaves.find(x=>x.id===id);if(!l)return;l.status=s;if(s==='approved'){const e=eO(l.employeeId);if(e&&e.status==='active')e.status='on_leave';}sv(db);rLeave();t('Leave '+s);}
+
+// === PAYROLL ===
+function rPay(){
+  const db=gD();
+  if(!db.employees.length){$('ct').innerHTML=`<div class="anim">${es('<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>','No Payroll','Add employees first.','<button onclick="go(\'employees\')" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">Add Employees →</button>')}</div>`;return;}
+  const months=[...new Set(db.payroll.map(p=>p.month))].sort().reverse();
+  const sel=$('ps')?.value||(months[0]||new Date().toISOString().slice(0,7));
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"><p class="text-sm text-gray-500">Salary management</p><div class="flex gap-2"><button onclick="mGenPay()" class="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-200 transition">Generate Payslips</button><select id="ps" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" onchange="rPayT()">${months.length?months.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${new Date(m+'-01').toLocaleDateString('en',{month:'long',year:'numeric'})}</option>`).join(''):``}</select></div></div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="pySt"></div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+      <th class="px-5 py-3 font-medium text-gray-500">Employee</th><th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">Base</th><th class="px-5 py-3 font-medium text-gray-500 hidden md:table-cell">Bonus</th><th class="px-5 py-3 font-medium text-gray-500 hidden md:table-cell">Deductions</th><th class="px-5 py-3 font-medium text-gray-500">Net</th><th class="px-5 py-3 font-medium text-gray-500">Status</th>
+    </tr></thead><tbody id="pyTb"></tbody></table></div></div>
+  </div>`;rPayT();
+}
+function rPayT(){
+  const db=gD();const month=$('ps')?.value||new Date().toISOString().slice(0,7);const recs=db.payroll.filter(p=>p.month===month);
+  const tot=recs.reduce((s,p)=>s+p.net,0),bn=recs.reduce((s,p)=>s+p.bonus,0),dd=recs.reduce((s,p)=>s+p.deductions,0);
+  $('pySt').innerHTML=`<div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"><p class="text-sm text-gray-500">Total Payroll</p><p class="text-2xl font-bold text-gray-800 mt-1">${mn(tot)}</p></div><div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"><p class="text-sm text-gray-500">Bonuses</p><p class="text-2xl font-bold text-green-600 mt-1">${mn(bn)}</p></div><div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"><p class="text-sm text-gray-500">Deductions</p><p class="text-2xl font-bold text-red-500 mt-1">${mn(dd)}</p></div>`;
+  if(!recs.length){$('pyTb').innerHTML=`<tr><td colspan="6">${es('<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d1d5db" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>','No Records','Generate payslips for this month.','<button onclick="mGenPay()" class="bg-forest text-white px-4 py-2 rounded-xl text-sm font-medium">Generate</button>')}</td></tr>`;return;}
+  $('pyTb').innerHTML=recs.map(p=>{const e=eO(p.employeeId);if(!e)return'';return`<tr class="border-t border-gray-50"><td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold">${ini(e.name)}</div><div><p class="font-medium">${e.name}</p><p class="text-xs text-gray-400">${e.department}</p></div></div></td><td class="px-5 py-3 text-gray-600 hidden sm:table-cell">${mn(p.base)}</td><td class="px-5 py-3 text-green-600 hidden md:table-cell">+${mn(p.bonus)}</td><td class="px-5 py-3 text-red-500 hidden md:table-cell">-${mn(p.deductions)}</td><td class="px-5 py-3 font-bold">${mn(p.net)}</td><td class="px-5 py-3">${bd(p.status)}</td></tr>`}).join('');
+}
+function mGenPay(){const db=gD();const month=new Date().toISOString().slice(0,7);if(db.payroll.some(p=>p.month===month)){t('Payroll for this month exists','error');return;}db.employees.filter(e=>e.status!=='inactive').forEach(e=>{const bn=Math.round(Math.random()*2000),dd=Math.round(e.salary*0.11);db.payroll.push({id:uid(db.payroll),employeeId:e.id,month:month,base:e.salary,bonus:bn,deductions:dd,net:e.salary+bn-dd,status:'pending'});});sv(db);rPay();t('Payroll generated!');}
+
+// === RECRUITMENT ===
+function rRecr(){
+  const db=gD();
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"><p class="text-sm text-gray-500">${db.recruitment.length} candidate${db.recruitment.length!==1?'s':''}</p><button onclick="mAddCand()" class="bg-forest text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add Candidate</button></div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr>
+      <th class="px-5 py-3 font-medium text-gray-500">Candidate</th>
+      <th class="px-5 py-3 font-medium text-gray-500 hidden sm:table-cell">Position</th>
+      <th class="px-5 py-3 font-medium text-gray-500 hidden md:table-cell">Applied</th>
+      <th class="px-5 py-3 font-medium text-gray-500">Status</th>
+      <th class="px-5 py-3 font-medium text-gray-500">Actions</th>
+    </tr></thead><tbody id="rcTb"></tbody></table></div></div>
+  </div>`;rRecrT();
+}
+function rRecrT(){
+  const db=gD();
+  if(!db.recruitment.length){$('rcTb').innerHTML=`<tr><td colspan="5">${es('<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d1d5db" stroke-width="1.5"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/></svg>','No Candidates','Add candidates to your recruitment pipeline.','<button onclick="mAddCand()" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">+ Add Candidate</button>')}</td></tr>`;return;}
+  $('rcTb').innerHTML=db.recruitment.slice().reverse().map(c=>`<tr class="border-t border-gray-50">
+    <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-mint grid place-items-center text-forest text-xs font-bold">${ini(c.name)}</div><div><p class="font-medium">${c.name}</p><p class="text-xs text-gray-400">${c.email}</p></div></div></td>
+    <td class="px-5 py-3 text-gray-600 hidden sm:table-cell">${c.position}</td>
+    <td class="px-5 py-3 text-gray-600 hidden md:table-cell text-xs">${fd(c.applied)}</td>
+    <td class="px-5 py-3">${bd(c.status)}</td>
+    <td class="px-5 py-3"><div class="flex gap-1">
+      ${c.status==='reviewing'?`<button onclick="updCand(${c.id},'shortlisted')" class="p-1.5 hover:bg-amber-50 rounded-lg text-amber-600" title="Shortlist"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>`:''}
+      ${c.status==='shortlisted'?`<button onclick="updCand(${c.id},'interviewing')" class="p-1.5 hover:bg-purple-50 rounded-lg text-purple-600" title="Interview"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></button>`:''}
+      ${c.status==='interviewing'?`<button onclick="updCand(${c.id},'hired')" class="p-1.5 hover:bg-green-50 rounded-lg text-green-600" title="Hire"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></button>`:''}
+      <button onclick="delCand(${c.id})" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+    </div></td>
+  </tr>`).join('');
+}
+function mAddCand(){
+  md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Add Candidate</h3>
+    <form id="candForm" class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label><input id="fc_n" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input id="fc_e" type="email" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input id="fc_p" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Position *</label><input id="fc_pos" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Notes</label><textarea id="fc_notes" rows="2" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm"></textarea></div>
+      <div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium">Add</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium">Cancel</button></div>
+    </form></div>`);
+  $('candForm').onsubmit=function(ev){ev.preventDefault();const db=gD();db.recruitment.push({id:uid(db.recruitment),name:$('fc_n').value.trim(),email:$('fc_e').value.trim(),phone:$('fc_p').value.trim(),position:$('fc_pos').value.trim(),notes:$('fc_notes').value.trim(),applied:new Date().toISOString().slice(0,10),status:'reviewing'});sv(db);cm();rRecrT();t('Candidate added!');};
+}
+function updCand(id,status){const db=gD();const c=db.recruitment.find(x=>x.id===id);if(!c)return;c.status=status;sv(db);rRecrT();t('Status updated!');}
+function delCand(id){cm2('Delete Candidate?','This candidate will be removed.',()=>{const db=gD();db.recruitment=db.recruitment.filter(c=>c.id!==id);sv(db);rRecrT();t('Deleted');});}
+
+// === DEPARTMENTS ===
+function rDept(){
+  const db=gD();const ds={};db.employees.forEach(e=>{ds[e.department]=(ds[e.department]||0)+1;});
+  $('ct').innerHTML=`<div class="anim space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"><p class="text-sm text-gray-500">${db.departments.length} department${db.departments.length!==1?'s':''}</p><button onclick="mAddDept()" class="bg-forest text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-light transition flex items-center gap-2"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add Department</button></div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${db.departments.length?db.departments.map(d=>`<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition"><div class="flex items-center justify-between mb-3"><div class="w-10 h-10 rounded-xl bg-mint grid place-items-center text-forest"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg></div><button onclick="delDept('${d.replace(/'/g,"\\'")}')" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div><h3 class="font-semibold text-gray-800">${d}</h3><p class="text-sm text-gray-500 mt-1">${ds[d]||0} employee${(ds[d]||0)!==1?'s':''}</p></div>`).join(''):es('<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>','No Departments','Add your first department.','<button onclick="mAddDept()" class="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-medium">+ Add</button>')}</div>
+  </div>`;
+}
+function mAddDept(){md(`<div class="p-6"><h3 class="text-lg font-semibold mb-5">Add Department</h3><form id="dptForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Name</label><input id="fdp_n" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" required placeholder="e.g. Operations"></div><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-forest text-white py-2.5 rounded-xl font-medium">Add</button><button type="button" onclick="cm()" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-medium">Cancel</button></div></form></div>`);$('dptForm').onsubmit=function(ev){ev.preventDefault();const n=$('fdp_n').value.trim();const db=gD();if(db.departments.some(d=>d.toLowerCase()===n.toLowerCase())){t('Already exists','error');return;}db.departments.push(n);sv(db);cm();rDept();t('Added!');};}
+function delDept(n){const db=gD();const used=db.employees.some(e=>e.department===n);cm2('Delete Department?',`"${n}" ${used?`has ${db.employees.filter(e=>e.department===n).length} employee(s)`:'has no employees'}. Delete anyway?`,()=>{const d2=gD();d2.departments=d2.departments.filter(d=>d!==n);if(used)d2.employees.forEach(e=>{if(e.department===n)e.department=d2.departments[0]||'General';});sv(d2);rDept();t('Deleted');});}
+
+// === INIT ===
+$('td').textContent=new Date().toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+bN();go('dashboard');
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').then(r=>console.log('SW OK',r.scope)).catch(e=>console.log('SW fail',e));});}
+</script>
+</body>
+</html>
